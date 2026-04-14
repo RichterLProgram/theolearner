@@ -15,6 +15,8 @@ interface AuthContextType {
   session: Session | null
   loading: boolean
   error: string | null
+  login: (email: string, password: string) => Promise<void>
+  register: (email: string, password: string, username: string) => Promise<void>
   logout: () => Promise<void>
 }
 
@@ -66,8 +68,45 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }
 
+  const login = async (email: string, password: string) => {
+    try {
+      setError(null)
+      const { data, error: err } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      })
+      if (err) throw err
+      setSession(data.session)
+      setUser(data.user)
+    } catch (err: any) {
+      setError(err.message)
+      throw err
+    }
+  }
+
+  const register = async (email: string, password: string, username: string) => {
+    try {
+      setError(null)
+      // Use backend endpoint instead of direct Supabase Auth to avoid rate limits
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/auth/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password, username }),
+      })
+
+      const data = await response.json()
+      if (!response.ok) throw new Error(data.error || 'Registration failed')
+
+      // Now login with the credentials
+      await login(email, password)
+    } catch (err: any) {
+      setError(err.message)
+      throw err
+    }
+  }
+
   return (
-    <AuthContext.Provider value={{ user, session, loading, error, logout }}>
+    <AuthContext.Provider value={{ user, session, loading, error, login, register, logout }}>
       {children}
     </AuthContext.Provider>
   )

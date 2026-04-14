@@ -4,6 +4,7 @@ import dotenv from 'dotenv'
 import authRoutes from './routes/auth'
 import exerciseRoutes from './routes/exercises'
 import userRoutes from './routes/user'
+import chapterRoutes from './routes/chapters'
 import './config/supabase' // Initialize Supabase
 
 dotenv.config()
@@ -28,6 +29,7 @@ app.get('/health', (req: Request, res: Response) => {
 app.use('/api/auth', authRoutes)
 app.use('/api/exercises', exerciseRoutes)
 app.use('/api/user', userRoutes)
+app.use('/api/chapters', chapterRoutes)
 
 // Error handling
 app.use((err: any, req: Request, res: Response) => {

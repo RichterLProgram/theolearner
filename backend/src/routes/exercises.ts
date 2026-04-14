@@ -72,14 +72,25 @@ router.post('/:id/submit', verifyToken, async (req: AuthRequest, res: Response) 
       return res.status(400).json({ error: 'selectedOption must be a number' })
     }
 
+    // Check if exercise was already completed
+    const { data: existingProgress } = await supabase
+      .from('user_progress')
+      .select('is_completed, attempts, xp_earned')
+      .eq('user_id', userId)
+      .eq('exercise_id', exerciseId)
+      .single()
+
     // Get exercise to check answer
     const exercise = await exerciseService.getExerciseById(exerciseId)
     const isCorrect = selectedOption === exercise.correct_answer
 
-    // Calculate XP
-    const xpEarned = isCorrect
+    // Only earn XP if not already completed
+    const xpEarned = isCorrect && !existingProgress?.is_completed
       ? gamificationService.calculateXP(exercise.difficulty, 1, true)
       : 0
+
+    // Update attempts
+    const currentAttempts = (existingProgress?.attempts || 0) + 1
 
     // Save progress
     const { error: progressError } = await supabase
@@ -88,18 +99,12 @@ router.post('/:id/submit', verifyToken, async (req: AuthRequest, res: Response) 
         {
           user_id: userId,
           exercise_id: exerciseId,
-          is_completed: isCorrect,
-          score: isCorrect ? 1 : 0,
+          is_completed: isCorrect || existingProgress?.is_completed || false,
+          score: isCorrect ? 1 : (existingProgress?.is_completed ? 1 : 0),
           selected_option: selectedOption,
-          xp_earned: xpEarned,
+          xp_earned: existingProgress?.xp_earned ? existingProgress.xp_earned : xpEarned,
           last_attempt: new Date().toISOString(),
-          attempts: (await supabase
-            .from('user_progress')
-            .select('attempts')
-            .eq('user_id', userId)
-            .eq('exercise_id', exerciseId)
-            .single()
-            .catch(() => ({ data: { attempts: 0 } }))).data?.attempts || 0
+          attempts: currentAttempts
         },
         { onConflict: 'user_id,exercise_id' }
       )
@@ -108,7 +113,7 @@ router.post('/:id/submit', verifyToken, async (req: AuthRequest, res: Response) 
       throw progressError
     }
 
-    // Update user total XP if correct
+    // Update user total XP only if this is the first correct completion
     if (isCorrect && xpEarned > 0) {
       const { data: userProfile } = await supabase
         .from('user_profiles')
