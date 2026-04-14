@@ -32,7 +32,7 @@ app.use('/api/user', userRoutes)
 app.use('/api/chapters', chapterRoutes)
 
 // Error handling
-app.use((err: any, req: Request, res: Response) => {
+app.use((err: any, req: Request, res: Response, next: any) => {
   console.error('Error:', err)
   res.status(err.status || 500).json({
     error: err.message || 'Internal Server Error',
