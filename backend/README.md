@@ -1,11 +1,11 @@
 # TheoLearner Backend
 
-Node.js + Express + Firebase Backend für gamifizierte Theoretische Informatik Platform.
+Node.js + Express + Supabase (PostgreSQL) Backend für gamifizierte Theoretische Informatik Platform.
 
 ## Setup
 
 ### 1. Environment Variables
-Kopiere `.env.example` zu `.env` und fülle die Firebase Credentials aus:
+Kopiere `.env.example` zu `.env` und fülle die Supabase Credentials aus:
 
 ```bash
 cp .env.example .env
@@ -13,18 +13,20 @@ cp .env.example .env
 
 Dann bearbeite `.env`:
 ```
-FIREBASE_PROJECT_ID=your-project-id
-FIREBASE_PRIVATE_KEY=your-private-key
-FIREBASE_CLIENT_EMAIL=your-client-email
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_ANON_KEY=your-anon-key
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 NODE_ENV=development
 PORT=5000
 CLIENT_URL=http://localhost:3000
+JWT_SECRET=your-jwt-secret-from-supabase
 ```
 
-Hol dir die Credentials von Firebase Console:
-- Gehe zu Project Settings → Service Accounts
-- Klick "Generate New Private Key"
-- Kopiere die Werte in `.env`
+Hol dir die Credentials von Supabase:
+- Gehe zu Supabase Project Settings → API
+- Kopiere `Project URL` (SUPABASE_URL)
+- Kopiere `anon` Key (SUPABASE_ANON_KEY)
+- Kopiere `service_role` Key (SUPABASE_SERVICE_ROLE_KEY)
 
 ### 2. Installation
 
@@ -86,13 +88,14 @@ src/
       └── aufgaben-2-2.ts — Seed data for exercises
 ```
 
-## Firestore Collections
+## Supabase (PostgreSQL) Tables
 
-- `users/` — User profiles & account data
-- `exercises/` — Exercise definitions
-- `topics/` — Topic/Chapter metadata
-- `userProgress/` — User exercise attempts & progress
-- `achievements/` — Achievement definitions
+- `users` — User profiles & account data
+- `exercises` — Exercise definitions
+- `topics` — Topic/Chapter metadata
+- `user_progress` — User exercise attempts & progress
+- `achievements` — Achievement definitions
+- `user_achievements` — User achievement unlock tracking
 
 ## Gamification
 

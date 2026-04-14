@@ -1,45 +1,58 @@
-import { getDb } from '../config/firebase'
+import { supabase } from '../config/supabase'
 
 export class ExerciseService {
-  private db = getDb()
-
   async getAllExercises() {
-    const snapshot = await this.db.collection('exercises').get()
-    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }))
+    const { data, error } = await supabase
+      .from('exercises')
+      .select('*')
+      .order('order', { ascending: true })
+    
+    if (error) throw new Error(`Failed to fetch exercises: ${error.message}`)
+    return data || []
   }
 
   async getExercisesByTopic(topicId: string) {
-    const snapshot = await this.db
-      .collection('exercises')
-      .where('topicId', '==', topicId)
-      .orderBy('order', 'asc')
-      .get()
-    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }))
+    const { data, error } = await supabase
+      .from('exercises')
+      .select('*')
+      .eq('topic_id', topicId)
+      .order('order', { ascending: true })
+    
+    if (error) throw new Error(`Failed to fetch topic exercises: ${error.message}`)
+    return data || []
   }
 
   async getExerciseById(exerciseId: string) {
-    const doc = await this.db.collection('exercises').doc(exerciseId).get()
-    if (!doc.exists) throw new Error('Exercise not found')
-    return { id: doc.id, ...doc.data() }
+    const { data, error } = await supabase
+      .from('exercises')
+      .select('*')
+      .eq('id', exerciseId)
+      .single()
+    
+    if (error) throw new Error(`Exercise not found: ${error.message}`)
+    return data
   }
 
   async submitAnswer(userId: string, exerciseId: string, selectedOptionId: number, isCorrect: boolean) {
-    const batch = this.db.batch()
+    const xpEarned = isCorrect ? 15 : 0
     
-    const progressRef = this.db.collection('userProgress').doc(`${userId}_${exerciseId}`)
-    batch.set(progressRef, {
-      userId,
-      exerciseId,
-      isCompleted: isCorrect,
-      score: isCorrect ? 1 : 0,
-      attempts: 1,
-      selectedOption: selectedOptionId,
-      lastAttempt: new Date(),
-      xpEarned: isCorrect ? 15 : 0
-    }, { merge: true })
-
-    await batch.commit()
-    return { isCorrect, xpEarned: isCorrect ? 15 : 0 }
+    const { error } = await supabase
+      .from('user_progress')
+      .upsert({
+        user_id: userId,
+        exercise_id: exerciseId,
+        is_completed: isCorrect,
+        score: isCorrect ? 1 : 0,
+        attempts: 1,
+        selected_option: selectedOptionId,
+        xp_earned: xpEarned,
+        last_attempt: new Date().toISOString()
+      }, {
+        onConflict: 'user_id,exercise_id'
+      })
+    
+    if (error) throw new Error(`Failed to save progress: ${error.message}`)
+    return { isCorrect, xpEarned }
   }
 }
 

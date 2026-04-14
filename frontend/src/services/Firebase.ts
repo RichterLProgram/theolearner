@@ -1,7 +1,4 @@
-// Placeholder file for service utilities
-// This will use Firebase SDK after npm install finishes
+// Frontend Supabase client initialization
+// Re-export supabase from AuthContext for use in components
 
-export const initializeFirebaseClient = () => {
-  // Firebase client initialization will go here
-  console.log('Firebase client will initialize here')
-}
+export { supabase } from '../context/AuthContext'

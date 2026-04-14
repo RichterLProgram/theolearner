@@ -1,10 +1,10 @@
 import express, { Express, Request, Response } from 'express'
 import cors from 'cors'
 import dotenv from 'dotenv'
-import { initializeFirebase } from './config/firebase'
 import authRoutes from './routes/auth'
 import exerciseRoutes from './routes/exercises'
 import userRoutes from './routes/user'
+import './config/supabase' // Initialize Supabase
 
 dotenv.config()
 
@@ -18,9 +18,6 @@ app.use(cors({
 }))
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
-
-// Initialize Firebase
-initializeFirebase()
 
 // Health Check
 app.get('/health', (req: Request, res: Response) => {

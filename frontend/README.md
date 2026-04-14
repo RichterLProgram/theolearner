@@ -1,31 +1,27 @@
 # TheoLearner Frontend
 
-React + TypeScript + Vite + Tailwind CSS Frontend für gamifizierte Theoretische Informatik Platform.
+React + TypeScript + Vite + Tailwind CSS Frontend für gamifizierte Theoretische Informatik Platform mit Supabase Auth.
 
 ## Setup
 
 ### 1. Environment Variables
-Kopiere `.env.example` zu `.env.local` und fülle die Firebase Credentials aus:
+Kopiere `.env.example` zu `.env.local` und fülle die Supabase Credentials aus:
 
 ```bash
 cp .env.example .env.local
 ```
 
-Dann bearbeite `.env.local` mit deinen Firebase Credentials:
+Dann bearbeite `.env.local` mit deinen Supabase Credentials:
 ```
-VITE_FIREBASE_API_KEY=your-api-key
-VITE_FIREBASE_AUTH_DOMAIN=your-project.firebaseapp.com
-VITE_FIREBASE_PROJECT_ID=your-project-id
-VITE_FIREBASE_STORAGE_BUCKET=your-project.appspot.com
-VITE_FIREBASE_MESSAGING_SENDER_ID=your-sender-id
-VITE_FIREBASE_APP_ID=your-app-id
+VITE_SUPABASE_URL=https://your-project.supabase.co
+VITE_SUPABASE_ANON_KEY=your-anon-key
 VITE_API_URL=http://localhost:5000/api
 ```
 
-Hol dir die Credentials von Firebase Console:
-- Gehe zu Project Settings → Your Apps
-- Wähle Web App
-- Kopiere die Konfiguration
+Hol dir die Credentials von Supabase:
+- Gehe zu Project Settings → API
+- Kopiere `Project URL` (VITE_SUPABASE_URL)
+- Kopiere `anon` Key (VITE_SUPABASE_ANON_KEY)
 
 ### 2. Installation
 
@@ -103,7 +99,7 @@ src/
 
 ## Features
 
-- ✅ Firebase Authentication (Email, Google, GitHub)
+- ✅ Supabase Authentication (Email, Google, GitHub)
 - ✅ Multiple Choice Exercise Player
 - ✅ XP & Level System
 - ✅ Achievement Unlock
