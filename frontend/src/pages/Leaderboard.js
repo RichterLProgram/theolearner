@@ -1,0 +1,16 @@
+import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
+import { useEffect } from 'react';
+import { useLeaderboard } from '../hooks/useLeaderboard';
+import { useAuth } from '../context/AuthContext';
+const Leaderboard = () => {
+    const { user } = useAuth();
+    const { leaderboard, loading, fetchLeaderboard } = useLeaderboard();
+    useEffect(() => {
+        fetchLeaderboard();
+    }, [fetchLeaderboard]);
+    return (_jsxs("div", { className: "max-w-4xl mx-auto", children: [_jsx("h1", { className: "text-4xl font-bold mb-2", children: "\uD83C\uDFC6 Leaderboard" }), _jsx("p", { className: "text-gray-600 mb-8", children: "Top players ranked by XP and level" }), loading ? (_jsx("div", { className: "text-center text-gray-600", children: "Loading leaderboard..." })) : leaderboard.length === 0 ? (_jsx("div", { className: "bg-white p-6 rounded-lg shadow-sm border border-gray-200 text-gray-600", children: "No players found yet" })) : (_jsx("div", { className: "bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden", children: _jsxs("table", { className: "w-full", children: [_jsx("thead", { children: _jsxs("tr", { className: "bg-gray-50 border-b border-gray-200", children: [_jsx("th", { className: "px-6 py-4 text-left font-semibold text-gray-900", children: "Rank" }), _jsx("th", { className: "px-6 py-4 text-left font-semibold text-gray-900", children: "Player" }), _jsx("th", { className: "px-6 py-4 text-left font-semibold text-gray-900", children: "Level" }), _jsx("th", { className: "px-6 py-4 text-left font-semibold text-gray-900", children: "XP" }), _jsx("th", { className: "px-6 py-4 text-left font-semibold text-gray-900", children: "Completed" })] }) }), _jsx("tbody", { className: "divide-y divide-gray-200", children: leaderboard.map((entry, index) => {
+                                const isCurrentUser = user?.id === entry.user_id;
+                                return (_jsxs("tr", { className: isCurrentUser ? 'bg-blue-50' : index % 2 === 0 ? 'bg-white' : 'bg-gray-50', children: [_jsx("td", { className: "px-6 py-4", children: _jsxs("div", { className: "flex items-center gap-2", children: [entry.rank === 1 && _jsx("span", { className: "text-2xl", children: "\uD83E\uDD47" }), entry.rank === 2 && _jsx("span", { className: "text-2xl", children: "\uD83E\uDD48" }), entry.rank === 3 && _jsx("span", { className: "text-2xl", children: "\uD83E\uDD49" }), entry.rank > 3 && _jsx("span", { className: "font-bold text-gray-900", children: entry.rank })] }) }), _jsx("td", { className: "px-6 py-4", children: _jsxs("div", { className: "font-medium text-gray-900", children: [entry.username, isCurrentUser && _jsx("span", { className: "ml-2 text-blue-600 text-sm", children: "(You)" })] }) }), _jsx("td", { className: "px-6 py-4", children: _jsx("div", { className: "font-medium text-primary", children: entry.current_level }) }), _jsx("td", { className: "px-6 py-4", children: _jsx("div", { className: "font-medium text-orange-600", children: entry.total_xp }) }), _jsx("td", { className: "px-6 py-4", children: _jsxs("div", { className: "text-gray-900", children: [entry.exercises_completed, " / 11"] }) })] }, entry.user_id));
+                            }) })] }) }))] }));
+};
+export default Leaderboard;
