@@ -1,8 +1,6 @@
-import { getDb } from '../config/firebase'
+import { supabase } from '../config/supabase'
 
 export class GamificationService {
-  private db = getDb()
-
   calculateXP(difficulty: number, attempts: number, isCorrect: boolean): number {
     if (!isCorrect) return 0
     
@@ -24,17 +22,64 @@ export class GamificationService {
   async checkAchievements(userId: string, userStats: any): Promise<string[]> {
     const unlockedAchievements: string[] = []
     
-    // Check if "Erste 5 Übungen" achievement should be unlocked
-    if (userStats.exercisesCompleted === 5) {
-      unlockedAchievements.push('first-five')
-    }
+    try {
+      // Get all achievements
+      const { data: achievements } = await supabase
+        .from('achievements')
+        .select('*')
 
-    // Check if "100 XP" milestone
-    if (userStats.totalXP >= 100 && userStats.totalXP - 25 < 100) {
-      unlockedAchievements.push('hundred-xp')
+      // Get user's already unlocked achievements
+      const { data: userAchievements } = await supabase
+        .from('user_achievements')
+        .select('achievement_id')
+        .eq('user_id', userId)
+
+      const unlockedIds = new Set(userAchievements?.map((ua) => ua.achievement_id) || [])
+
+      for (const achievement of achievements || []) {
+        if (unlockedIds.has(achievement.id)) continue
+
+        const shouldUnlock = this.checkAchievementCondition(achievement, userStats)
+        if (shouldUnlock) {
+          // Unlock achievement
+          const { error } = await supabase
+            .from('user_achievements')
+            .insert({ user_id: userId, achievement_id: achievement.id })
+
+          if (!error) {
+            unlockedAchievements.push(achievement.name)
+          }
+        }
+      }
+    } catch (err) {
+      console.error('Error checking achievements:', err)
     }
 
     return unlockedAchievements
+  }
+
+  private checkAchievementCondition(achievement: any, userStats: any): boolean {
+    const condition = achievement.unlock_condition
+
+    if (condition.type === 'exercises_completed') {
+      // Count completed exercises
+      return userStats.exercisesCompleted >= condition.count
+    }
+
+    if (condition.type === 'total_xp') {
+      return userStats.totalXP >= condition.amount
+    }
+
+    if (condition.type === 'streak') {
+      return userStats.streak >= condition.count
+    }
+
+    if (condition.type === 'topic_completed') {
+      // More complex - would need to check if all exercises in topic are done
+      return false
+    }
+
+    return false
   }
 }
 
